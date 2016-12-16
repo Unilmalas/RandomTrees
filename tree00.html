@@ -2,7 +2,7 @@
 <html>
 <body>
 
-<canvas id="myCanvas" width="300" height="200" style="border:1px solid #d3d3d3;">
+<canvas id="myCanvas" width="500" height="400" style="border:1px solid #d3d3d3;">
 Your browser does not support the HTML5 canvas tag.</canvas>
 
 <script>
@@ -12,8 +12,8 @@ var c = document.getElementById("myCanvas");
 var ctx = c.getContext("2d");
 
 // trunk first
-var p0 = {x: 150, y: 200};
-var p1 = {x: 150, y: 150};
+var p0 = {x: 200, y: 400};
+var p1 = {x: 200, y: 300};
 
 drawLine(p0, p1, 10);
 drawBranches(p0, p1, -4.5, 7);
@@ -30,22 +30,22 @@ function drawBranches(fr, to, alpha, thck) { // from point, to point, alpha, thi
 	var len = Math.sqrt(dx * dx + dy * dy);
 	// new direction 0
 	var beta = ( Math.atan(dy / (dx + 0.001)) + alpha + Math.random() / 2 ) / 2;
-	dx = Math.sin(beta) * len * Math.random() * 1.15;
-	dy = Math.cos(beta) * len * Math.random() * 1.15;
+	dx = Math.sin(beta) * len * Math.random() * 1.1;
+	dy = Math.cos(beta) * len * Math.random() * 1.1;
 	var toto = {x: to.x + dx, y: to.y + dy};
 	drawLine(to, toto, thck);
 	drawBranches(to, toto, alpha, thck-1);
 	// new direction 1
 	var beta = ( Math.atan(dy / (dx + 0.001)) - alpha - Math.random() / 2 ) / 2;
-	dx = Math.sin(beta) * len * Math.random() * 1.15;
-	dy = Math.cos(beta) * len * Math.random() * 1.15;
+	dx = Math.sin(beta) * len * Math.random() * 1.1;
+	dy = Math.cos(beta) * len * Math.random() * 1.1;
 	var toto = {x: to.x + dx, y: to.y + dy};
 	drawLine(to, toto, thck);
 	drawBranches(to, toto, alpha, thck-1);
 	// new direction 2
 	var beta = ( Math.atan(dy / (dx + 0.001)) - alpha - Math.random() ) / 2;
-	dx = Math.sin(beta) * len * Math.random() * 1.15;
-	dy = Math.cos(beta) * len * Math.random() * 1.15;
+	dx = Math.sin(beta) * len * Math.random() * 1.1;
+	dy = Math.cos(beta) * len * Math.random() * 1.1;
 	var toto = {x: to.x + dx, y: to.y + dy};
 	drawLine(to, toto, thck);
 	drawBranches(to, toto, alpha, thck-1);
@@ -61,16 +61,29 @@ function drawLine(fr, to, thck) {
 	ctx.stroke(); // actually draw the path on the canvas	
 }
 
-function drawLeaf(fr, to) { // todo: just 1 now, want 2, also too much length-dependency...
+function drawLeaf(fr, to) { // todo: too much length-dependency...
+	var alpha = 1.4;
 	var dx = to.x-fr.x;
 	var dy = to.y-fr.y;
+	var sdx = Math.sign(dx);
+	var sdy = Math.sign(dy);
 	var len = Math.sqrt(dx * dx + dy * dy) * Math.random();
 	// new direction 0
-	//var beta = ( Math.atan(dy / (dx + 0.001)) + alpha + Math.random() / 2 ) / 2;
-	//dx = Math.sin(beta) * len/2;
-	//dy = Math.cos(beta) * len/2;
+	var beta = ( Math.atan(dy / (dx + 0.001)) + alpha + Math.random() / 2 ) / 2;
+	dx = Math.sin(beta) * len * sdx;
+	dy = Math.cos(beta) * len * sdy;
 	var toto = {x: to.x + dx, y: to.y + dy};
 	ctx.beginPath();
+	ctx.moveTo(to.x, to.y);
+	ctx.quadraticCurveTo(to.x + dy,to.y - dx,toto.x,toto.y);
+	ctx.moveTo(to.x, to.y);
+	ctx.quadraticCurveTo(to.x - dy,to.y + dx,toto.x,toto.y);
+	// new direction 1
+	alpha = 3.2;
+	beta = ( Math.atan(dy / (dx + 0.001)) + alpha + Math.random() / 2 ) / 2;
+	dx = Math.sin(beta) * len * (-sdx);
+	dy = Math.cos(beta) * len * (-sdy);
+	toto = {x: to.x + dx, y: to.y + dy};
 	ctx.moveTo(to.x, to.y);
 	ctx.quadraticCurveTo(to.x + dy,to.y - dx,toto.x,toto.y);
 	ctx.moveTo(to.x, to.y);
