@@ -16,10 +16,14 @@ var p0 = {x: 150, y: 200};
 var p1 = {x: 150, y: 150};
 
 drawLine(p0, p1, 10);
-drawBranches(p0, p1, -4.5, 8);
+drawBranches(p0, p1, -4.5, 7);
 
+// currently 3 branches fixed
 function drawBranches(fr, to, alpha, thck) { // from point, to point, alpha, thickness
-	if ( thck <= 2 ) return;
+	if ( thck <= 2 ) {
+		drawLeaf(fr, to);
+		return;
+	}
 	// previous length: sqrt((to.x-fr.x)^2 + (to.y-fr.y)^2)
 	var dx = to.x-fr.x;
 	var dy = to.y-fr.y;
@@ -38,6 +42,13 @@ function drawBranches(fr, to, alpha, thck) { // from point, to point, alpha, thi
 	var toto = {x: to.x + dx, y: to.y + dy};
 	drawLine(to, toto, thck);
 	drawBranches(to, toto, alpha, thck-1);
+	// new direction 2
+	var beta = ( Math.atan(dy / (dx + 0.001)) - alpha - Math.random() ) / 2;
+	dx = Math.sin(beta) * len * Math.random() * 1.15;
+	dy = Math.cos(beta) * len * Math.random() * 1.15;
+	var toto = {x: to.x + dx, y: to.y + dy};
+	drawLine(to, toto, thck);
+	drawBranches(to, toto, alpha, thck-1);
 }
 
 function drawLine(fr, to, thck) {
@@ -46,8 +57,30 @@ function drawLine(fr, to, thck) {
 	ctx.lineTo(to.x, to.y);
 	ctx.lineWidth=thck;
 	ctx.lineCap="round";
+	ctx.strokeStyle="black";
 	ctx.stroke(); // actually draw the path on the canvas	
 }
+
+function drawLeaf(fr, to) { // todo: just 1 now, want 2, also too much length-dependency...
+	var dx = to.x-fr.x;
+	var dy = to.y-fr.y;
+	var len = Math.sqrt(dx * dx + dy * dy) * Math.random();
+	// new direction 0
+	//var beta = ( Math.atan(dy / (dx + 0.001)) + alpha + Math.random() / 2 ) / 2;
+	//dx = Math.sin(beta) * len/2;
+	//dy = Math.cos(beta) * len/2;
+	var toto = {x: to.x + dx, y: to.y + dy};
+	ctx.beginPath();
+	ctx.moveTo(to.x, to.y);
+	ctx.quadraticCurveTo(to.x + dy,to.y - dx,toto.x,toto.y);
+	ctx.moveTo(to.x, to.y);
+	ctx.quadraticCurveTo(to.x - dy,to.y + dx,toto.x,toto.y);
+	ctx.lineWidth=1;
+	ctx.lineCap="round";
+	ctx.strokeStyle="green";
+	ctx.stroke(); // actually draw the path on the canvas	
+}
+
 
 </script>
 <p><strong>Note:</strong> Treetest </p>
