@@ -28,36 +28,50 @@ function randSg(min, max) {
 
 // currently 3 branches fixed
 function drawBranches(fr, to, alpha, thck) { // from point, to point, alpha, thickness
+	var lenlow = 1.5;
+	var lenhi = 4.5;
+	var lowright = -1.0;
+	var hiright = 2.0;
+	var lowleft = -2.0;
+	var hileft = 1.0;
+	var nexta = 1.05;
+	var cdx = 0.5;
+	var cdy = 0.8;
+	var cdxup = 0.9;
+	
 	if ( thck <= 2 ) {
-		//drawLeaf(fr, to);
+		drawLeaf(fr, to);
 		return;
 	}
+	
 	// previous length: sqrt((to.x-fr.x)^2 + (to.y-fr.y)^2)
 	var dx = to.x-fr.x;
 	var dy = to.y-fr.y;
-	var len = Math.sqrt(dx * dx + dy * dy) / randRg(2, 5);
-	// new direction 0
+	var len = Math.sqrt(dx * dx + dy * dy) / randRg(lenlow, lenhi);
+	
+	// new direction right
 	var beta = (0.2* Math.atan(dy / (dx+0.0001)) - 0.8*randRg(-alpha, alpha));
-	var dx1 = 0.5*dx + randSg(-0.8, 2) * Math.sin(beta) * len;
-	var dy1 = 0.8*dy + Math.cos(beta) * len;
+	var dx1 = cdx*dx + randSg(lowright, hiright) * Math.sin(beta) * len;
+	var dy1 = cdy*dy + Math.cos(beta) * len;
 	var toto = {x: to.x + dx1, y: to.y + dy1};
 	drawLine(to, toto, thck);
-	drawBranches(to, toto, alpha, thck-1); 
-	// new direction 1
+	drawBranches(to, toto, alpha*nexta, thck-1);
+	
+	// new direction left
 	beta = (0.2* Math.atan(dy / (dx+0.0001)) - 0.8*randRg(-alpha, alpha));
-	dx1 = 0.5*dx + randSg(-2, 0.8) * Math.sin(beta) * len;
-	dy1 = 0.8*dy + Math.cos(beta) * len;
+	dx1 = cdx*dx + randSg(lowleft, hiright) * Math.sin(beta) * len;
+	dy1 = cdy*dy + Math.cos(beta) * len;
 	toto = {x: to.x + dx1, y: to.y + dy1};
 	drawLine(to, toto, thck);
-	drawBranches(to, toto, alpha, thck-1);
-	// new direction 2
+	drawBranches(to, toto, alpha*nexta, thck-1);
+	
+	// new direction up
 	beta = (0.5* Math.atan(dy / (dx+0.0001)) - 0.5*randRg(-alpha, alpha));
-	dx1 = 0.9*dx - Math.sin(beta) * len;
+	dx1 = cdxup*dx - Math.sin(beta) * len;
 	dy1 = dy + Math.cos(beta) * len;
 	toto = {x: to.x + dx1, y: to.y + dy1};
 	drawLine(to, toto, thck);
-	drawBranches(to, toto, alpha, thck-1);
-
+	drawBranches(to, toto, alpha*nexta, thck-1);
 }
 
 function drawWriggle(fr, to, thck) {
