@@ -14,10 +14,10 @@ var ctx = c.getContext("2d");
 // trunk first
 var p0 = {x: 200, y: 400};
 var p1 = {x: 200, y: 300};
-drawEvo(p0, p1, 7);
+drawEvo2(p0, 3.2, 7);
 var p0 = {x: 200, y: 400};
 var p1 = {x: 200, y: 300};
-drawBranches2(p0, p1, -1.5, 6);
+//drawBranches2(p0, p1, -1.5, 6);
 
 
 function randRg(min, max) {
@@ -33,6 +33,60 @@ function randn_bm() {
     var u = 1 - Math.random(); // Subtraction to flip [0, 1) to (0, 1].
     var v = 1 - Math.random();
     return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+}
+
+function drawEvo2(fr, alpha, thck) { // draw evolutionary tree
+
+	if ( thck < 3 ) {
+		//drawLeaf(fr, to);
+		return;
+	}
+
+	var ds = thck;
+	var alphaLim = Math.PI/10;
+	var s = 0;
+	var slim = thck / 2 * 30;
+	var dlim = slim / ds;
+	var calpha = alpha;
+	var nbranches = 0;
+	
+	//for ( var i = 0; i<dlim; i++) {
+	while ( s < slim ) {
+		calpha = alpha + alphaLim * randn_bm();
+		var dx = ds * Math.sin(calpha);
+		var dy = ds * Math.cos(calpha);
+		s += ds;
+
+		var cdx = dx / 1.8;
+		var cdy = dy / 1.8;
+
+		var cfpt = {x: fr.x - cdy, y: fr.y + cdx};
+		var ctpt = {x: fr.x + cdy, y: fr.y - cdx};
+		
+		ctx.beginPath();
+		ctx.moveTo(cfpt.x, cfpt.y);
+		ctx.lineTo(ctpt.x, ctpt.y);
+		ctx.lineWidth = thck;
+		ctx.strokeStyle="black";
+		ctx.stroke();
+		
+		fr.x += dx;
+		fr.y += dy;
+		
+		// possibly add branching earlier, with some prob... towads end of s
+		var xend = fr.x;
+		var yend = fr.y;
+		//console.log(Math.exp( s / slim ) / Math.E );
+		
+		if ( 2 * Math.random() < Math.exp( s / slim ) / Math.E && nbranches < 1 ) {
+			nbranches++;
+			drawEvo2(fr, 1.05 * calpha, thck - 1);
+			fr = {x: xend, y: yend};
+		}
+	}
+	
+	fr = {x: xend, y: yend};
+	drawEvo2(fr, alpha + 1.05 * alphaLim * randn_bm(), thck - 1);
 }
 
 function drawEvo(fr, to, thck) { // draw evolutionary tree
