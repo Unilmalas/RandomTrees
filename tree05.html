@@ -23,7 +23,7 @@ var ps1 = {x: 200, y: 300};
 
 var branch0 = new Array();
 
-drawEvo3(ps0, 3.1, 8, 0); // from point, alpha, initial thickness, depth
+drawEvo3(ps0, 3.1, 9, 0); // from point, alpha, initial thickness, depth
 
 //console.log(JSON.stringify(branch0));
 
@@ -99,24 +99,36 @@ function drawStrokes(point) { // draws strokes along points in branch0[]
 	if ( strokebase.length == maxdepth ) {
 		// draw strokes; note: always draw till max depth
 		//console.log('draw stroke: ' + JSON.stringify(strokebase));
+		
+		// draw stem
+		ps0 = {x: 200, y: 400};
+		ctx.beginPath();
+		ctx.moveTo(ps0.x, ps0.y);
+		ctx.lineTo(strokebase[0].x, strokebase[0].y);
+		ctx.lineWidth = 6;
+		ctx.strokeStyle="black";
+		ctx.stroke();
+		
 		// interpolate stroke points
-		var p0 = {x: ps0.x, y: ps0.y};
+		var p0 = {x: strokebase[0].x, y: strokebase[0].y};
 		var p1 = {x: strokebase[0].x, y: strokebase[0].y};
 		var p2 = {x: strokebase[1].x, y: strokebase[1].y};
 		var cpoint = {x: 0, y: 0};
 		
+		ctx.beginPath();
 		ctx.moveTo(p0.x, p0.y);
 		for(var t=0; t<=1;t+=0.1) {
 			cpoint.x = (1-t)*(1-t)*p0.x + 2*(1-t)*t*p1.x + t*t*p2.x;
 			cpoint.y = (1-t)*(1-t)*p0.y + 2*(1-t)*t*p1.y + t*t*p2.y;
 			ctx.lineTo(cpoint.x, cpoint.y);
 		}
-		ctx.lineWidth = 3;
+		ctx.lineWidth = 4;
 		ctx.stroke();
 
 		p0 = {x: strokebase[1].x, y: strokebase[1].y};
 		p1 = {x: strokebase[2].x, y: strokebase[2].y};
 		p2 = {x: strokebase[3].x, y: strokebase[3].y};
+		ctx.beginPath();
 		ctx.moveTo(p0.x, p0.y);
 		for(var t=0; t<=1;t+=0.1) {
 			cpoint.x = (1-t)*(1-t)*p0.x + 2*(1-t)*t*p1.x + t*t*p2.x;
@@ -129,6 +141,7 @@ function drawStrokes(point) { // draws strokes along points in branch0[]
 		p0 = {x: strokebase[3].x, y: strokebase[3].y};
 		p1 = {x: strokebase[4].x, y: strokebase[4].y};
 		p2 = {x: strokebase[5].x, y: strokebase[5].y};
+		ctx.beginPath();
 		ctx.moveTo(p0.x, p0.y);
 		for(var t=0; t<=1;t+=0.1) {
 			cpoint.x = (1-t)*(1-t)*p0.x + 2*(1-t)*t*p1.x + t*t*p2.x;
@@ -159,7 +172,7 @@ function drawEvo3(fr, alpha, thck, depth) { // draw evolutionary tree
 	}
 
 	var ds = thck;
-	var alphaLim = Math.PI/thck/3;
+	var alphaLim = Math.PI/(thck)/3;
 	var s = 0;
 	var slim = thck / 2 * 20; // max branch length
 	var dlim = slim / ds;
