@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<canvas id="gc" width="400" height="400"></canvas>
+<script>
+'use strict';
+
+window.onload=function() {
+	var canv=document.getElementById("gc");
+	var ctx=canv.getContext("2d");
+	fillfield(150);
+	setInterval(game, 1000/10, canv, ctx); // calls a function or evaluates an expression at specified intervals
+}
+
+var tc=10; // cell size
+
+var field = []; // playing field (as 1-dim array)
+var nx = 40; // number of cells in x-coord.
+var ny = 40; // number of cells in y-coord.
+
+function game(canv, ctx) {
+	for ( let ix=0; ix<nx; ix++) // update field
+		for ( let iy=0; iy<ny; iy++)
+			setcell(ix, iy, nextcell(ix, iy));
+	
+	ctx.fillStyle="black";
+	ctx.fillRect(0,0,canv.width,canv.height); // draw background
+	
+	ctx.fillStyle="lime";
+	let ncells = nx * ny;
+	for(var i=0; i<ncells; i++) {
+		if ( field[i] === 1 )
+			ctx.fillRect(getcoordx(i)*10, getcoordy(i)*10, tc-2, tc-2); // draw cell
+	}
+}
+
+function getcoordx(i) { // get x-coordinate from array index
+	return i % nx;
+}
+
+function getcoordy(i) { // get y-coordinate from array index
+	return ( i - i % nx ) / nx;
+}
+
+function getcell(x,y) { // get status of cell at x, y
+	if ( x === nx ) x = 0;
+	if ( x < 0 ) x = nx-1;
+	if ( y === ny ) y = 0;
+	if ( y < 0 ) y = ny-1;
+	return field[x + (y-1) * nx];
+}
+
+function setcell(x,y,v) { // set status of cell at x, y to v
+	if ( x === nx ) x = 0;
+	if ( x < 0 ) x = nx-1;
+	if ( y === ny ) y = 0;
+	if ( y < 0 ) y = ny-1;
+	field[x + (y-1) * nx] = v;
+}
+
+function nextcell(x,y) { // determine next status of cell at x, y
+	let cellsum = 0;
+	let thiscell = 0;
+	for (let ix = x-1; ix < x+2; ix++ ) {
+		for (let iy = y-1; iy < y+2; iy++ ) {
+			if ( ix === x && iy === y ) thiscell = getcell(ix, iy);
+			else cellsum += getcell(ix, iy);
+		}
+	}
+	//console.log('nextcell: thiscell: ' + thiscell + ' cellsum: ' + cellsum);
+	if ( cellsum < 2 || cellsum > 3) return 0; // more than 3 neighbors or less than 2 neighbors: dead
+	else {
+		if ( thiscell === 0 && cellsum === 3 ) return 1; // born
+		else return thiscell; // no change
+	}
+}
+
+function fillfield(n) { // random starting field, n cells
+	let ncells = nx * ny;
+	for ( let i=0; i<ncells; i++) // init array
+		field[i] = 0;
+	for ( let i=0; i<n; i++) // random starter cells
+		field[randInt(ncells)] = 1;
+}
+
+function randInt( maxN ) {
+	return ~~( Math.random() * maxN );     // returns a number between 0 and maxN-1
+}
+
+</script>
+</html>
