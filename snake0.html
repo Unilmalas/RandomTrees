@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<canvas id="gc" width="400" height="400"></canvas>
+<script>
+'use strict';
+
+window.onload=function() {
+	var canv=document.getElementById("gc");
+	var ctx=canv.getContext("2d");
+	document.addEventListener("keydown",keyPush);
+	setInterval(game, 1000/15, canv, ctx); // calls a function or evaluates an expression at specified intervals
+}
+
+var px=10;
+var py=10; // position x and y, given in increments of the snake element size
+var gs=20;
+var tc=20; // snake element size
+var ax=15;
+var ay=15; // position of apple
+var xv=0;
+var yv=0; // speed x and y
+var trail=[]; // tail array
+var tail = 5; // tail length
+
+function game(canv, ctx) {
+	px+=xv; // update position
+	py+=yv;
+	
+	if(px<0) { // playfield border checks
+		px = tc-1;
+	}
+	if(px>tc-1) {
+		px = 0;
+	}
+	if(py<0) {
+		py = tc-1;
+	}
+	if(py>tc-1) {
+		py = 0;
+	}
+	
+	ctx.fillStyle="black";
+	ctx.fillRect(0,0,canv.width,canv.height); // draw background
+
+	ctx.fillStyle="lime";
+	for(var i=0;i<trail.length;i++) {
+		ctx.fillRect(trail[i].x*gs,trail[i].y*gs,gs-2,gs-2); // draw worm : fillRect(x,y,width,height)
+		if(trail[i].x==px && trail[i].y==py) { // reverse direction condition: if you move back onto yourself reste the tail length
+			tail = 5;
+		}
+	}
+	
+	trail.push({x:px,y:py}); // add current position to tail
+	while(trail.length>tail) { // and remove the tail elements that are beyond the current tail length
+		trail.shift();
+	}
+
+	if(ax==px && ay==py) { // apple found? increase tail and position new apple
+		tail++;
+		ax=Math.floor(Math.random()*tc);
+		ay=Math.floor(Math.random()*tc);
+	}
+	ctx.fillStyle="red";
+	ctx.fillRect(ax*gs,ay*gs,gs-2,gs-2); // draw apple
+}
+
+function keyPush(evt) {
+	switch(evt.keyCode) {
+		case 37: // left arrow
+			xv=-1;yv=0;
+			break;
+		case 38: // up arrow
+			xv=0;yv=-1;
+			break;
+		case 39: // right arrow
+			xv=1;yv=0;
+			break;
+		case 40: // down arrow
+			xv=0;yv=1;
+			break;
+	}
+}
+
+</script>
+</html>
