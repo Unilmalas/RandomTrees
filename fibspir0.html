@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<canvas id="myCanvas" width="600" height="800" style="border:1px solid #d3d3d3;">
+Your browser does not support the HTML5 canvas tag.</canvas>
+
+<script>
+'use strict';
+
+// draws a Fibonacci spiral with enclosing squares
+
+var c = document.getElementById("myCanvas");
+var ctx = c.getContext("2d");
+
+var scale = 10;
+var seqX = [1, 1, -1, -1]; // next corner positions
+var seqY = [1, -1, -1, 1];
+var seqaX = [0, 1, 0, -1]; // next arc corner positions
+var seqaY = [1, 0, -1, 0];
+var nFib = 9; // number of Fibonacci numbers
+var f = 2; // counter Fibonacci number
+
+let x0 = 400;
+let y0 = 200;
+let f0 = 1.;
+drawElement(0, f0, x0, y0, dx(0), dy(0));
+let f1 = 1.;
+x0 += dx(0) * f0 * scale;
+y0 += dy(0) * f0 * scale;
+drawElement(1, f1, x0, y0, dx(1), dy(1));
+x0 += dx(1) * f1 * scale;
+y0 += dy(1) * f1 * scale;
+
+while (f < nFib) {
+	let fc = f0 + f1;
+	f0 = f1;
+	f1 = fc;
+	drawElement(f, fc, x0, y0, dx(f), dy(f));
+	x0 += dx(f) * fc * scale;
+	y0 += dy(f) * fc * scale;
+	f++;
+}
+
+function drawElement(nf, fib, x0, y0, dx, dy) { // draws a spiral element
+	ctx.beginPath();
+	ctx.rect(x0, y0, dx * fib * scale, dy * fib * scale);
+	ctx.moveTo(x0, y0);
+	ctx.arcTo(x0 + seqaX[ nf % 4 ] * fib * scale, y0 + seqaY[ nf % 4 ] * fib * scale, x0 + dx * fib * scale, y0 + dy * fib * scale, fib * scale); // arc
+	ctx.stroke();
+}
+
+function dx(nf, fib) { // next corner for next element
+	return seqX[ nf % 4 ];
+}
+
+function dy(nf, fib) {
+	return seqY[ nf % 4 ];
+}
+
+function fibrec(x) { // recursive
+	if ( x > 1. ) return ( fibrec( x-1. ) + fibrec( x-2. ) );
+	return x;
+}
+
+function fibloop(x) { // with loops (faster)
+	let f0 = 1.;
+	let f1 = 1.;
+	let ctr = 2;
+	while (ctr < x) {
+		let fc = f0 + f1;
+		f0 = f1;
+		f1 = fc;
+		ctr++;
+	}
+	return f1;
+}
+
+</script> 
+</body>
+</html>
