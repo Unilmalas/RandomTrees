@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<canvas id="gc" width="400" height="400"></canvas>
+<script>
+'use strict';
+
+window.onload=function() {
+	var canv=document.getElementById("gc");
+	var ctx=canv.getContext("2d");
+	ctx.beginPath();
+	ctx.arc(x0.x, x0.y, 5, 0, 2*Math.PI);
+	ctx.stroke();
+	setInterval(game0, 1000/25, canv, ctx); // calls a function or evaluates an expression at specified intervals
+}
+
+var x0 = { x: 150., y: 150. };
+var m0 = 10.;
+var x1 = { x: 200., y: 330. };
+var m1 = 1.;
+var v1 = { x: .5, y: -1.8 };
+
+function game0(canv, ctx) {
+	let dt = 1.0;
+	let dist = vsub(x0, x1);
+	let absd = vlen(dist);
+	let accel = vmultc(dist, 330. * m0 * m1 / absd / absd / absd );
+	//console.log('fx: ' + fg.x.toPrecision(2) + ' fy: ' + fg.y.toPrecision(2));
+	
+	ctx.fillStyle="black";
+	ctx.fillRect(0,0,canv.width,canv.height); // draw background
+	
+	ctx.strokeStyle="lime";
+	ctx.moveTo(x1.x, x1.y);
+	
+	if ( vlen(accel) > 10. ) dt = 0.2; // finer movement at higher accelerations
+	else dt = 1.0;
+	
+	v1 = vadd(v1, vmultc(accel, dt));
+	x1 = vadd(x1, vmultc(v1, dt));
+	
+	ctx.lineTo(x1.x, x1.y);
+	ctx.stroke();
+}
+
+function vadd(x, y) {
+	return { x: x.x + y.x, y: x.y + y.y };
+}
+
+function vsub(x, y) {
+	return { x: x.x - y.x, y: x.y - y.y };
+}
+
+function vlen(x) {
+	return Math.sqrt(( x.x * x.x ) + ( x.y * x.y ));
+}
+
+function vmultc(x, c) {
+	return { x: c * x.x, y: c * x.y };
+}
+
+function vnorm(x, c) {
+	let vl = vlen(x);
+	if ( vl === 0 ) return { x: 0, y: 0 };
+	return { x: c * x.x / vl, y: c * x.y / vl };
+}
+
+function proj(x, d, z) {
+	if ( z !== 0 ) return x * d / z;
+	return 0;
+}
+
+function randInt( maxN ) {
+	return ~~( Math.random() * maxN );     // returns a number between 0 and maxN-1
+}
+
+function randIntnp( maxN ) {
+	return ~~( Math.random() * 2 * maxN ) - maxN;     // returns a number between -(maxN-1) and maxN-1
+}
+
+</script>
+</html>
