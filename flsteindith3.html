@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<body>
+<p>Floyd-Steinberg Dithering with Pixelation:</p>
+<br>
+<input type="file" id="imageLoader" name="imageLoader"/>
+Greyscale: <input type="checkbox" id="setGrey">
+Pixelize: <input type="checkbox" id="setPix">
+<br>
+<canvas id="myCanvas" width="400" height="400" style="border:1px solid #d3d3d3;">
+Your browser does not support the HTML5 canvas tag.</canvas>
+
+<script>
+'use strict';
+var imgd = []; // original image data
+var imgdpix = []; // pixelized image
+
+var imageLoader = document.getElementById('imageLoader');
+imageLoader.addEventListener('change', handleImage, false);
+var canv = document.getElementById("myCanvas");
+var ctx = canv.getContext("2d");
+
+window.onload = function() {
+
+};
+
+function handleImage(e){
+    var reader = new FileReader();
+    reader.onload = function(event){
+        var img = new Image();
+        img.onload = function(){
+            canv.width = img.width;
+            canv.height = img.height;
+            ctx.drawImage(img,0,0);
+			// now process image
+			imgd = ctx.getImageData( 0, 0, canv.width, canv.height );
+			var xgrey = document.getElementById("setGrey");
+			var xpix = document.getElementById("setPix");
+			floydstein( canv, xgrey.checked );
+
+			if ( xpix.checked ) {
+				let nred = 3;
+				imgdpix = ctx.createImageData( imgd.width / nred, imgd.height / nred ); // creates a new, blank ImageData object with width and height
+				pixelize( imgd, imgdpix, nred )
+				ctx.putImageData( imgdpix, 0, 0 );
+			} else
+				ctx.putImageData( imgd, 0, 0 );
+			
+			xgrey.checked = false; // need to clear these for proper reuse
+			xpix.checked = false;
+        }
+        img.src = event.target.result;
+    }
+    reader.readAsDataURL(e.target.files[0]);	
+}
+
+function floydstein( canv, grey ) {
+	let oldpixel = [0,0,0,255];
+	let newpixel = [0,0,0,255];
+	let c0 = 7 / 16;
+	let c1 = 3 / 16;
+	let c2 = 5 / 16;
+	let c3 = 1 / 16;
+	let quant_error = [0,0,0,255]; // canv.height canv.width
+	
+	for (let y = 0; y < canv.height-1; y++ ) {
+	   let yoff = y * canv.width * 4; // 4 entries for each pixel: RGBA
+	   let pavrg = 0;
+	   for (let x = 4; x < ( canv.width * 4 ) - 4; x += 4) {
+		  oldpixel[0] = parseInt(imgd.data[x + yoff]);
+		  oldpixel[1] = parseInt(imgd.data[x + yoff + 1]);
+		  oldpixel[2] = parseInt(imgd.data[x + yoff + 2]);
+		  if ( grey ) {
+			  pavrg = ( oldpixel[0] + oldpixel[1] + oldpixel[2] ) / 3;
+			  pavrg = ~~(pavrg / 255 ) * 255;
+			  newpixel[0] = pavrg;
+			  newpixel[1] = pavrg;
+			  newpixel[2] = pavrg;
+		  } else {
+			  newpixel[0] = ~~(oldpixel[0] / 255) * 255;
+			  newpixel[1] = ~~(oldpixel[1] / 255) * 255;
+			  newpixel[2] = ~~(oldpixel[2] / 255) * 255;
+		  }
+		  imgd.data[x+yoff] = newpixel[0];
+		  imgd.data[x+yoff+1] = newpixel[1];
+		  imgd.data[x+yoff+2] = newpixel[2];
+		  quant_error[0] = oldpixel[0] - newpixel[0];
+		  quant_error[1] = oldpixel[1] - newpixel[1];
+		  quant_error[2] = oldpixel[2] - newpixel[2];
+
+		  let yplus1 = yoff + canv.width * 4;
+		  // pixel[x + 1][y    ] = pixel[x + 1][y    ] + quant_error * 7 / 16;
+		  imgd.data[x+4 + yoff] += quant_error[0] * c0;
+		  imgd.data[x+4 + yoff + 1] += quant_error[1] * c0;
+		  imgd.data[x+4 + yoff + 2] += quant_error[2] * c0;
+		  // pixel[x - 1][y + 1] = pixel[x - 1][y + 1] + quant_error * 3 / 16;
+		  imgd.data[x-4 + yplus1] += quant_error[0] * c1;
+		  imgd.data[x-4 + yplus1 + 1] += quant_error[1] * c1;
+		  imgd.data[x-4 + yplus1 + 2] += quant_error[2] * c1;
+		  // pixel[x    ][y + 1] = pixel[x    ][y + 1] + quant_error * 5 / 16;
+		  imgd.data[x   + yplus1] += quant_error[0] * c2;
+		  imgd.data[x   + yplus1 + 1] += quant_error[1] * c2;
+		  imgd.data[x   + yplus1 + 2] += quant_error[2] * c2;
+		  // pixel[x + 1][y + 1] = pixel[x + 1][y + 1] + quant_error * 1 / 16;
+		  imgd.data[x+4 + yplus1] += quant_error[0] * c3;
+		  imgd.data[x+4 + yplus1 + 1] += quant_error[1] * c3;
+		  imgd.data[x+4 + yplus1 + 2] += quant_error[2] * c3;
+		}
+	}
+}
+
+function pixelize( imgd, imgdpix, n ) {
+	let limit = (n-1)/2;
+	let dy = imgd.width * 4; // for y-offset
+	let dypix = imgdpix.width * 4; // for y-offset pixelated
+	//console.log(imgd.height + ' : ' + imgdpix.height);
+	for (let y = limit; y < imgd.height-limit; y += limit ) { // y for y-coord from 0 to image width (note: starts at row 1 not 0)
+		let yoff = y * dy; // 4 entries for each pixel: RGBA
+		let yoffpix = ( y / n * dypix );
+		let pixval = 0;
+		for (let x = limit*4; x < dy-limit*4; x += 4*limit ) { // x for x-coord from 0 to image width
+			if ( (x+yoff) % (n) === 0 ) {
+				pixval = pixavrg( x+yoff, dy, n );
+				let xpix = ~~( x / n );
+				imgdpix.data[xpix+yoffpix] = pixval;
+				imgdpix.data[xpix+yoffpix+1] = pixval;
+				imgdpix.data[xpix+yoffpix+2] = pixval;
+				imgdpix.data[xpix+yoffpix+3] = 255;
+			}
+		}
+	}
+}
+
+function pixavrg( xy, dy, n ) {
+	let pavrg = 0;
+	let pixval = 0;
+	let limit = (n-1)/2;
+	for (let iy = -limit; iy < limit; iy++ ) { // all points in patch of size n*n
+		let ixiy = 0;
+		for (let ix = -limit; ix < limit; ix++ ) {
+			ixiy = ix+iy*dy;
+			pavrg = ( imgd.data[xy+ixiy] + imgd.data[xy+ixiy+1] + imgd.data[xy+ixiy+2] ) / 3;
+			pavrg = ~~(pavrg / 255 ) * 255;
+			pixval += pavrg;
+		}
+	}
+	return pixval;
+}
+
+function map( value, start0, stop0, start1, stop1 ) {
+	return ((value-start0)/(stop0-start0))*(stop1-start1)+start1;
+}
+
+</script>
+</body>
+</html>
