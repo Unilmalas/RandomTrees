@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<canvas id="myCanvas" width="400" height="300" style="border:1px solid #d3d3d3;">
+Your browser does not support the HTML5 canvas tag.</canvas>
+
+<script>
+// Ulam spiral (simple example)
+'use strict';
+
+const dgrid = 20;
+
+var c = document.getElementById("myCanvas");
+var ctx = c.getContext("2d");
+
+let cpos = [ 150, 120, 0, 1, 0 ];
+for ( let i=0; i<121; i++ ) {
+	cpos = spiralPos( i, cpos[2], cpos[0], cpos[1], cpos[3], cpos[4] );
+	drawN( i, cpos[0], cpos[1], ctx );
+}
+
+function spiralPos(n, cdir, x0, y0, sidectr, side) { // n-th spiral position
+	let nextturn = Math.ceil((side-1)/2);
+	//console.log(n + ' - ' + nextturn + ' : ' + sidectr );
+	if ( sidectr >= nextturn ) {
+		cdir = nextDir(cdir);
+		sidectr = 1;
+		side++;
+	} else
+		sidectr++;
+	return [ x0 + dX(cdir), y0 + dY(cdir), cdir , sidectr, side ];
+}
+
+function dX(cdir) {
+	let dx = [1, 0, -1, 0];
+	return dx[cdir] * dgrid;
+}
+
+function dY(cdir) {
+	let dy = [0, 1, 0, -1];
+	return dy[cdir] * dgrid;
+}
+
+function nextDir(cdir) { // return next direction (0=x, 1=y, 2=-x, 3=-y)
+	if ( cdir === 3 )
+		return 0;
+	else
+		return cdir + 1;
+}
+
+function drawN(n, x0, y0, ctx) { // draw a number at x, y
+	if ( isPrime(n) ) {
+		ctx.font = "bold 10px Arial";
+		ctx.fillStyle = "#FF0000";
+	} else {
+		ctx.font = "10px Arial";
+		ctx.fillStyle = "#000000";
+	}
+	ctx.fillText(n, x0, y0);
+}
+
+function isPrime(num) { // todo: tune, precalc primes,...
+  for ( let i = 2; i < num; i++ )
+    if ( num % i === 0 ) return false;
+  return num !== 1;
+}
+
+</script>
+</body>
+</html>
