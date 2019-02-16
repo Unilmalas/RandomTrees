@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<canvas id="gc" width="400" height="200"></canvas>
+<script>
+'use strict';
+
+// init globals
+var framerate = 1/20;
+var particles = [];
+var frequency = 1/5;
+var time = 0.;
+var nparticles = 300;
+
+window.onload=function() {
+	var canv=document.getElementById("gc");
+	var ctx=canv.getContext("2d");
+	
+	// create particle field
+	for(let p=0; p<nparticles; p++) {
+		particles.push(new particle(frequency));
+	}
+
+	setInterval(pfield, framerate * 5000., canv, ctx); // calls a function or evaluates an expression at specified intervals
+}
+
+function pfield(canv, ctx) {
+
+	//console.log('fx: ' + fg.x.toPrecision(2) + ' fy: ' + fg.y.toPrecision(2));
+	ctx.fillStyle="black";
+	ctx.fillRect(0, 0, canv.width, canv.height); // draw background
+	ctx.strokeStyle="lime";
+	ctx.fillStyle = "lime";
+	
+	for(let p=0; p<nparticles; p++) {
+		particles[p].update();
+		particles[p].drawParticle(ctx);
+	}
+}
+
+function particle(f) {	// particle class
+	this.x = randInt(450) - 50;
+	this.y = randInt(200);
+	
+	//this.amplitude = randInt(50)/5. + 1.0;
+	//this.amplitude = 10.;
+	//this.amplitude = randInt(20.)/2.+1.;
+	this.amplitude = 20;
+	//this.phase = 1.;
+	
+	this.freq = f;
+	
+	this.drawParticle = function(ctx) {
+		ctx.beginPath();
+		ctx.strokeStyle="lime";
+		ctx.arc(this.x, this.y, 3, 0, 2*Math.PI);
+		ctx.stroke();
+	};
+
+	this.update = function() {
+		this.x += ~~(this.amplitude * Math.sin(this.freq * this.x));
+	};
+}
+
+function randInt( maxN ) {
+	return ~~( Math.random() * maxN );     // returns a number between 0 and maxN-1
+}
+
+function randIntnp( maxN ) {
+	return ~~( Math.random() * 2 * maxN ) - maxN;     // returns a number between -(maxN-1) and maxN-1
+}
+
+</script>
+</html>
